@@ -172,9 +172,9 @@
       <h3 style="margin:0">Edit Trainer Names</h3>
       <button class="ghost" id="btnCloseNames">Close</button>
     </div>
-    <label>Trainer 1</label><input id="n1">
-    <label>Trainer 2</label><input id="n2">
-    <label>Trainer 3</label><input id="n3">
+    <label>Dad</label><input id="n1">
+    <label>Evan</label><input id="n2">
+    <label>Reid</label><input id="n3">
     <div class="row" style="justify-content:flex-start;margin-top:12px">
       <button id="btnSaveNames">Save</button>
       <div class="muted">Stored only on this device.</div>
@@ -266,9 +266,9 @@
       money:0,
       active:0,
       trainers:[
-        {name:"Trainer 1", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
-        {name:"Trainer 2", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
-        {name:"Trainer 3", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
+        {name:"Dad", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
+        {name:"Evan", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
+        {name:"Reid", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
       ],
       pokeCache:{}, // name -> {types, heightIn, weightLb, sprite}
       dex:{}        // name -> {firstSeen, ownedCount, shinySeen, sprite}
@@ -919,9 +919,9 @@
   });
   $("btnCloseNames").addEventListener("click", ()=>$("dlgNames").close());
   $("btnSaveNames").addEventListener("click", ()=>{
-    state.trainers[0].name = $("n1").value.trim() || "Trainer 1";
-    state.trainers[1].name = $("n2").value.trim() || "Trainer 2";
-    state.trainers[2].name = $("n3").value.trim() || "Trainer 3";
+    state.trainers[0].name = $("n1").value.trim() || "Dad";
+    state.trainers[1].name = $("n2").value.trim() || "Evan";
+    state.trainers[2].name = $("n3").value.trim() || "Reid";
     save();
     $("dlgNames").close();
     renderAll();
