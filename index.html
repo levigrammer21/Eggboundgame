@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>EggBound — Family Hatch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b1220" />
+
+  <style>
+    body{
+      margin:0;
+      font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background:#0b1220;
+      color:#e5e7eb;
+    }
+    header{
+      padding:16px;
+      background:linear-gradient(135deg,#1e293b,#020617);
+      border-bottom:1px solid rgba(255,255,255,.1);
+    }
+    h1{margin:0;font-size:20px}
+    .sub{font-size:12px;color:#94a3b8}
+
+    .wrap{padding:14px;max-width:1000px;margin:auto}
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.1);
+      cursor:pointer;
+      font-size:12px;
+      background:#020617;
+    }
+    .tab.active{background:#2563eb}
+
+    .panel{
+      background:#020617;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:14px;
+    }
+
+    button{
+      background:#2563eb;
+      color:white;
+      border:none;
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    button.warn{background:#ca8a04}
+    button.danger{background:#dc2626}
+    button.small{padding:6px 10px;font-size:12px}
+
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .list{display:flex;flex-direction:column;gap:10px}
+
+    .card{
+      background:#020617;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:14px;
+      padding:10px;
+    }
+
+    .chip{
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:999px;
+      font-size:11px;
+      border:1px solid rgba(255,255,255,.15);
+      margin-right:4px;
+    }
+
+    .muted{color:#94a3b8;font-size:12px}
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>EggBound — Family Hatch</h1>
+  <div class="sub">One device • 3 trainers • eggs • shinies • trading • collecting</div>
+</header>
+
+<div class="wrap">
+
+  <div class="tabs" id="trainerTabs"></div>
+
+  <div class="panel">
+    <div class="row">
+      <button id="btnWildEgg">Claim Wild Egg (6h)</button>
+      <button class="warn" id="btnBuyEgg">Buy Egg (5 ₱)</button>
+      <div class="muted">PokéDollars: <b id="money">0</b></div>
+    </div>
+    <div class="muted" id="cooldownText"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Eggs</h3>
+    <div class="list" id="eggList"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Pokémon</h3>
+    <div class="list" id="pokeList"></div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- CORE STATE ---------------- */
+
+const POKEAPI = "https://pokeapi.co/api/v2/pokemon?limit=2000";
+const STORE_KEY = "eggbound_clean_v1";
+
+const now = ()=>Date.now();
+const uid = ()=>Math.random().toString(16).slice(2);
+
+function defaultState(){
+  return {
+    money:0,
+    active:0,
+    trainers:[
+      {name:"Trainer 1", eggs:[], pokemon:[], lastEgg:0},
+      {name:"Trainer 2", eggs:[], pokemon:[], lastEgg:0},
+      {name:"Trainer 3", eggs:[], pokemon:[], lastEgg:0},
+    ]
+  };
+}
+
+let state = JSON.parse(localStorage.getItem(STORE_KEY)) || defaultState();
+const save = ()=>localStorage.setItem(STORE_KEY, JSON.stringify(state));
+const t = ()=>state.trainers[state.active];
+
+/* ---------------- HELPERS ---------------- */
+
+async function getRandomSpecies(){
+  if(!window._all){
+    const r = await fetch(POKEAPI);
+    const d = await r.json();
+    window._all = d.results.map(x=>x.name);
+  }
+  return window._all[Math.floor(Math.random()*window._all.length)];
+}
+
+async function getInfo(name){
+  const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+  const d = await r.json();
+  return {
+    types:d.types.map(t=>t.type.name),
+    height:d.height*3.94,
+    weight:d.weight*0.22
+  };
+}
+
+function rollSize(base){
+  const out = Math.random()<0.05;
+  const r = out ? 0.8+Math.random()*0.4 : 0.9+Math.random()*0.2;
+  return Math.round(base*r*10)/10;
+}
+
+/* ---------------- ACTIONS ---------------- */
+
+async function claimEgg(ignore=false){
+  if(!ignore && now()-t().lastEgg < 6*60*60*1000) return;
+  const species = await getRandomSpecies();
+  t().lastEgg = now();
+  t().eggs.push({
+    id:uid(),
+    species,
+    ready:now()+60*60*1000,
+    shiny:Math.random()<1/256
+  });
+  save(); render();
+}
+
+async function hatch(id){
+  const egg = t().eggs.find(e=>e.id===id);
+  if(!egg || now()<egg.ready) return;
+  const info = await getInfo(egg.species);
+  t().eggs = t().eggs.filter(e=>e.id!==id);
+  t().pokemon.push({
+    id:uid(),
+    name:egg.species,
+    shiny:egg.shiny,
+    height:rollSize(info.height),
+    weight:rollSize(info.weight)
+  });
+  save(); render();
+}
+
+function release(id){
+  t().pokemon = t().pokemon.filter(p=>p.id!==id);
+  state.money++;
+  save(); render();
+}
+
+/* ---------------- RENDER ---------------- */
+
+function render(){
+  document.getElementById("money").textContent = state.money;
+
+  // trainers
+  const tabs = document.getElementById("trainerTabs");
+  tabs.innerHTML="";
+  state.trainers.forEach((tr,i)=>{
+    const b=document.createElement("div");
+    b.className="tab"+(i===state.active?" active":"");
+    b.textContent=tr.name;
+    b.onclick=()=>{state.active=i;save();render()};
+    tabs.appendChild(b);
+  });
+
+  // eggs
+  const eggs=document.getElementById("eggList");
+  eggs.innerHTML="";
+  t().eggs.forEach(e=>{
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`🥚 ${e.shiny?"✨":""} ${e.species}
+      <div class="muted">Ready in ${Math.max(0,Math.ceil((e.ready-now())/60000))} min</div>
+      <button class="small" onclick="hatch('${e.id}')">Hatch</button>`;
+    eggs.appendChild(d);
+  });
+
+  // pokemon
+  const mons=document.getElementById("pokeList");
+  mons.innerHTML="";
+  t().pokemon.forEach(p=>{
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`${p.shiny?"✨":""} ${p.name}
+      <div class="muted">${p.height}" • ${p.weight} lb</div>
+      <button class="danger small" onclick="release('${p.id}')">Release (+₱)</button>`;
+    mons.appendChild(d);
+  });
+}
+
+document.getElementById("btnWildEgg").onclick=()=>claimEgg(false);
+document.getElementById("btnBuyEgg").onclick=()=>{
+  if(state.money>=5){state.money-=5;claimEgg(true);}
+};
+
+render();
+</script>
+</body>
+</html>
