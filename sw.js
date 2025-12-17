@@ -1,4 +1,4 @@
-const CACHE="eggbound-polished-v2";
+const CACHE="eggbound-polished-v3";
 const ASSETS=["./","./index.html","./manifest.json","./sw.js"];
 
 self.addEventListener("install",e=>{
