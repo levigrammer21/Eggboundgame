@@ -38,11 +38,15 @@
     .chip{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;border:1px solid rgba(255,255,255,.14);background:var(--chip);color:var(--muted)}
     .chip.shiny{border-color:rgba(16,185,129,.55);color:#a7f3d0}
     .chip.fav{border-color:rgba(251,191,36,.55);color:#fde68a}
-    select,input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0b1220;color:var(--text);outline:none}
+    select,input,textarea{
+      width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);
+      background:#0b1220;color:var(--text);outline:none
+    }
+    textarea{min-height:120px;resize:vertical}
     label{display:block;margin:10px 0 6px;color:var(--muted);font-size:12px}
     dialog{border:none;border-radius:16px;padding:0;background:transparent}
     dialog::backdrop{background:rgba(0,0,0,.65)}
-    .modal{background:linear-gradient(135deg,#0b1220,#020617);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:min(860px,calc(100vw - 28px))}
+    .modal{background:linear-gradient(135deg,#0b1220,#020617);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:min(900px,calc(100vw - 28px))}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
     .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
     .kpi{border:1px solid var(--line);border-radius:14px;padding:10px;background:rgba(255,255,255,.02)}
@@ -72,12 +76,10 @@
         <div>
           <div class="muted">Local date: <span class="mono" id="today"></span></div>
           <div class="muted">Trainer: <b id="trainerName"></b></div>
+          <div class="muted">Save: <b id="saveHealth">Loading…</b></div>
         </div>
         <div class="row" style="justify-content:flex-end;gap:8px">
-          <button class="ghost" id="btnExport">Export</button>
-          <label class="ghost" style="padding:10px 14px;border-radius:12px;border:1px solid var(--line);cursor:pointer">
-            Import <input id="fileImport" type="file" accept="application/json" style="display:none">
-          </label>
+          <button class="ghost" id="btnSaveTools">Save Tools</button>
           <button class="danger" id="btnReset">Reset</button>
         </div>
       </div>
@@ -103,7 +105,7 @@
       <div class="hr"></div>
 
       <h3 style="margin:0 0 8px">Biome Search</h3>
-      <div class="muted">Each trainer can search for <b>one</b> biome egg at a time. Search takes <b>5–30 minutes</b>. Egg is still a mystery until hatch.</div>
+      <div class="muted">Each trainer can search for <b>one</b> biome egg at a time. Search takes <b>5–30 minutes</b>. Egg stays a mystery until hatch.</div>
       <label>Biome</label>
       <select id="biomeSelect"></select>
       <div class="row" style="justify-content:flex-start;margin-top:10px">
@@ -157,7 +159,7 @@
       <div id="view-eggs" class="list"></div>
       <div id="view-pokemon" class="list" style="display:none"></div>
       <div id="view-dex" style="display:none">
-        <div class="muted">Dex tracks owned species + shiny seen. Shows sprites once you’ve hatched that species.</div>
+        <div class="muted">Dex tracks owned species + shiny seen. Sprites show after you hatch that species.</div>
         <div class="hr"></div>
         <div class="list" id="dexList"></div>
       </div>
@@ -172,9 +174,9 @@
       <h3 style="margin:0">Edit Trainer Names</h3>
       <button class="ghost" id="btnCloseNames">Close</button>
     </div>
-    <label>Dad</label><input id="n1">
-    <label>Evan</label><input id="n2">
-    <label>Reid</label><input id="n3">
+    <label>Trainer 1</label><input id="n1">
+    <label>Trainer 2</label><input id="n2">
+    <label>Trainer 3</label><input id="n3">
     <div class="row" style="justify-content:flex-start;margin-top:12px">
       <button id="btnSaveNames">Save</button>
       <div class="muted">Stored only on this device.</div>
@@ -210,39 +212,66 @@
   </div>
 </dialog>
 
+<!-- Save Tools Modal -->
+<dialog id="dlgSave">
+  <div class="modal">
+    <div class="row">
+      <h3 style="margin:0">Save Tools (Local + Backups)</h3>
+      <button class="ghost" id="btnCloseSave">Close</button>
+    </div>
+
+    <div class="muted">This prevents losing progress from normal web hiccups. For true safety, download a backup occasionally.</div>
+    <div class="hr"></div>
+
+    <div class="row" style="justify-content:flex-start">
+      <button class="good" id="btnBackupNow">Backup Now</button>
+      <button class="ghost" id="btnDownloadBackup">Download Latest Backup</button>
+      <label class="ghost" style="padding:10px 14px;border-radius:12px;border:1px solid var(--line);cursor:pointer">
+        Restore Backup File <input id="fileRestore" type="file" accept="application/json" style="display:none">
+      </label>
+    </div>
+
+    <div class="hr"></div>
+
+    <h3 style="margin:0 0 8px">Save Code (copy/paste)</h3>
+    <div class="muted">Copy this into Notes. You can restore from it any time.</div>
+    <label>Code</label>
+    <textarea id="saveCode" class="mono" placeholder="Generate a code first…"></textarea>
+    <div class="row" style="justify-content:flex-start">
+      <button id="btnGenCode">Generate Code</button>
+      <button class="ghost" id="btnCopyCode">Copy</button>
+      <button class="warn" id="btnRestoreCode">Restore From Code</button>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="muted">Backups kept on device: <b id="backupCount">0</b> (keeps last 10)</div>
+    <div class="muted" id="saveMsg"></div>
+  </div>
+</dialog>
+
 <script>
 (() => {
   "use strict";
 
-  // --- Core rules ---
-  const STORE_KEY = "eggbound_polished_v2";
-  const POKEAPI_LIST = "https://pokeapi.co/api/v2/pokemon?limit=2000&offset=0";
-  const POKEAPI = "https://pokeapi.co/api/v2/pokemon/";
-  const WILD_COOLDOWN = 6*60*60*1000;
-  const HATCH_MS = 1*60*60*1000;
-  const SHINY_WILD = 1/256;
-  const SHINY_BREED = 1/192;
-  const OUTLIER_CHANCE = 0.05; // 5%
-  const NORMAL_RANGE = 0.10;   // ±10%
-  const OUTLIER_RANGE = 0.20;  // ±20%
-  const BUY_COST = 5;
-  const RELEASE_REWARD = 1;
+  /* =========================
+     Better Save System (A)
+     - IndexedDB primary
+     - Mirror copy
+     - Daily backups (last 10)
+     - Manual backup/export/restore
+     - Save code (copy/paste)
+     ========================= */
 
-  // --- Biomes (tunable any time) ---
-  const BIOMES = [
-    { id:"forest",   name:"Forest",   types:["grass","bug","normal"] },
-    { id:"mountain", name:"Mountain", types:["rock","ground","ice"] },
-    { id:"ocean",    name:"Ocean",    types:["water","ice"] },
-    { id:"cave",     name:"Cave",     types:["rock","ghost","poison"] },
-    { id:"desert",   name:"Desert",   types:["ground","fire"] },
-    { id:"swamp",    name:"Swamp",    types:["poison","water","grass"] },
-    { id:"sky",      name:"Sky",      types:["flying","electric"] },
-    { id:"city",     name:"City",     types:["normal","steel","electric"] },
-    { id:"volcano",  name:"Volcano",  types:["fire","rock"] },
-    { id:"tundra",   name:"Tundra",   types:["ice"] }
-  ];
+  const DB_NAME = "eggbound_db";
+  const DB_VER = 1;
+  const STORE_MAIN = "kv";
+  const STORE_BACKUPS = "backups";
+  const KEY_MAIN = "state_main";
+  const KEY_MIRROR = "state_mirror";
+  const KEY_META = "meta";
+  const MAX_BACKUPS = 10;
 
-  // --- Helpers ---
   const $ = (id)=>document.getElementById(id);
   const now = ()=>Date.now();
   const uid = ()=>Math.random().toString(16).slice(2)+"-"+Math.random().toString(16).slice(2);
@@ -261,28 +290,242 @@
     return `${ss}s`;
   };
 
+  function openDB(){
+    return new Promise((resolve,reject)=>{
+      const req = indexedDB.open(DB_NAME, DB_VER);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if(!db.objectStoreNames.contains(STORE_MAIN)) db.createObjectStore(STORE_MAIN);
+        if(!db.objectStoreNames.contains(STORE_BACKUPS)){
+          const bs = db.createObjectStore(STORE_BACKUPS, {keyPath:"id"});
+          bs.createIndex("ts", "ts");
+        }
+      };
+      req.onsuccess = ()=>resolve(req.result);
+      req.onerror = ()=>reject(req.error);
+    });
+  }
+
+  async function idbGet(store, key){
+    const db = await openDB();
+    return new Promise((resolve,reject)=>{
+      const tx = db.transaction(store, "readonly");
+      const st = tx.objectStore(store);
+      const req = st.get(key);
+      req.onsuccess = ()=>resolve(req.result);
+      req.onerror = ()=>reject(req.error);
+      tx.oncomplete = ()=>db.close();
+    });
+  }
+
+  async function idbSet(store, key, value){
+    const db = await openDB();
+    return new Promise((resolve,reject)=>{
+      const tx = db.transaction(store, "readwrite");
+      const st = tx.objectStore(store);
+      const req = st.put(value, key);
+      req.onsuccess = ()=>resolve(true);
+      req.onerror = ()=>reject(req.error);
+      tx.oncomplete = ()=>db.close();
+    });
+  }
+
+  async function idbAddBackup(obj){
+    const db = await openDB();
+    return new Promise((resolve,reject)=>{
+      const tx = db.transaction(STORE_BACKUPS, "readwrite");
+      const st = tx.objectStore(STORE_BACKUPS);
+      const req = st.add(obj);
+      req.onsuccess = ()=>resolve(true);
+      req.onerror = ()=>reject(req.error);
+      tx.oncomplete = ()=>db.close();
+    });
+  }
+
+  async function idbListBackups(){
+    const db = await openDB();
+    return new Promise((resolve,reject)=>{
+      const tx = db.transaction(STORE_BACKUPS, "readonly");
+      const st = tx.objectStore(STORE_BACKUPS);
+      const idx = st.index("ts");
+      const req = idx.getAll();
+      req.onsuccess = ()=>resolve(req.result || []);
+      req.onerror = ()=>reject(req.error);
+      tx.oncomplete = ()=>db.close();
+    });
+  }
+
+  async function idbDeleteBackup(id){
+    const db = await openDB();
+    return new Promise((resolve,reject)=>{
+      const tx = db.transaction(STORE_BACKUPS, "readwrite");
+      const st = tx.objectStore(STORE_BACKUPS);
+      const req = st.delete(id);
+      req.onsuccess = ()=>resolve(true);
+      req.onerror = ()=>reject(req.error);
+      tx.oncomplete = ()=>db.close();
+    });
+  }
+
+  function stableClone(obj){
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  // Compression-free “save code” (simple base64). Works offline.
+  function toSaveCode(obj){
+    const json = JSON.stringify(obj);
+    const bytes = new TextEncoder().encode(json);
+    let bin = "";
+    for(const b of bytes) bin += String.fromCharCode(b);
+    return btoa(bin);
+  }
+  function fromSaveCode(code){
+    const bin = atob(code.trim());
+    const bytes = new Uint8Array([...bin].map(ch=>ch.charCodeAt(0)));
+    const json = new TextDecoder().decode(bytes);
+    return JSON.parse(json);
+  }
+
+  async function saveState(state){
+    const payload = stableClone(state);
+    const ts = now();
+    payload._saveMeta = { ts, v: 1 };
+
+    // write main then mirror
+    await idbSet(STORE_MAIN, KEY_MAIN, payload);
+    await idbSet(STORE_MAIN, KEY_MIRROR, payload);
+
+    // update meta
+    const meta = (await idbGet(STORE_MAIN, KEY_META)) || {};
+    meta.lastSaveTs = ts;
+    await idbSet(STORE_MAIN, KEY_META, meta);
+
+    // optional: legacy mirror (just in case)
+    try { localStorage.setItem("eggbound_legacy_mirror", JSON.stringify(payload)); } catch {}
+    setSaveHealth("OK");
+  }
+
+  async function loadState(){
+    // prefer IDB main -> mirror -> legacy mirror -> default
+    const main = await safeGetMain(KEY_MAIN);
+    if(main) return main;
+
+    const mirror = await safeGetMain(KEY_MIRROR);
+    if(mirror) return mirror;
+
+    try{
+      const legacy = localStorage.getItem("eggbound_legacy_mirror");
+      if(legacy) return JSON.parse(legacy);
+    }catch{}
+
+    return defaultState();
+  }
+
+  async function safeGetMain(key){
+    try{
+      const v = await idbGet(STORE_MAIN, key);
+      if(!v) return null;
+      if(!v.trainers || !Array.isArray(v.trainers) || v.trainers.length!==3) return null;
+      return v;
+    }catch{
+      return null;
+    }
+  }
+
+  async function ensureDailyBackup(state){
+    const meta = (await idbGet(STORE_MAIN, KEY_META)) || {};
+    const today = dayKey();
+    if(meta.lastBackupDay === today) return;
+
+    await makeBackup(state, `Daily ${today}`);
+    meta.lastBackupDay = today;
+    await idbSet(STORE_MAIN, KEY_META, meta);
+  }
+
+  async function makeBackup(state, label){
+    const snap = stableClone(state);
+    const b = { id: uid(), ts: now(), label, state: snap };
+    await idbAddBackup(b);
+
+    // enforce MAX_BACKUPS
+    const all = await idbListBackups();
+    all.sort((a,b)=>a.ts-b.ts);
+    while(all.length > MAX_BACKUPS){
+      const oldest = all.shift();
+      await idbDeleteBackup(oldest.id);
+    }
+  }
+
+  async function getLatestBackup(){
+    const all = await idbListBackups();
+    if(!all.length) return null;
+    all.sort((a,b)=>b.ts-a.ts);
+    return all[0];
+  }
+
+  /* =========================
+     Game Rules / State
+     ========================= */
+
+  const POKEAPI_LIST = "https://pokeapi.co/api/v2/pokemon?limit=2000&offset=0";
+  const POKEAPI = "https://pokeapi.co/api/v2/pokemon/";
+  const WILD_COOLDOWN = 6*60*60*1000;
+  const HATCH_MS = 1*60*60*1000;
+  const SHINY_WILD = 1/256;
+  const SHINY_BREED = 1/192;
+  const OUTLIER_CHANCE = 0.05;
+  const NORMAL_RANGE = 0.10;
+  const OUTLIER_RANGE = 0.20;
+  const BUY_COST = 5;
+  const RELEASE_REWARD = 1;
+
+  const BIOMES = [
+    { id:"forest",   name:"Forest",   types:["grass","bug","normal"] },
+    { id:"mountain", name:"Mountain", types:["rock","ground","ice"] },
+    { id:"ocean",    name:"Ocean",    types:["water","ice"] },
+    { id:"cave",     name:"Cave",     types:["rock","ghost","poison"] },
+    { id:"desert",   name:"Desert",   types:["ground","fire"] },
+    { id:"swamp",    name:"Swamp",    types:["poison","water","grass"] },
+    { id:"sky",      name:"Sky",      types:["flying","electric"] },
+    { id:"city",     name:"City",     types:["normal","steel","electric"] },
+    { id:"volcano",  name:"Volcano",  types:["fire","rock"] },
+    { id:"tundra",   name:"Tundra",   types:["ice"] }
+  ];
+
   function defaultState(){
     return {
       money:0,
       active:0,
       trainers:[
-        {name:"Dad", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
-        {name:"Evan", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
-        {name:"Reid", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
+        {name:"Trainer 1", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
+        {name:"Trainer 2", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
+        {name:"Trainer 3", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
       ],
       pokeCache:{}, // name -> {types, heightIn, weightLb, sprite}
       dex:{}        // name -> {firstSeen, ownedCount, shinySeen, sprite}
     };
   }
 
-  let state;
-  try { state = JSON.parse(localStorage.getItem(STORE_KEY)) || defaultState(); }
-  catch { state = defaultState(); }
+  let state = null;
+  let saveQueued = false;
 
-  const save = ()=>localStorage.setItem(STORE_KEY, JSON.stringify(state));
-  const t = ()=>state.trainers[state.active];
+  function t(){ return state.trainers[state.active]; }
 
-  // --- PokéAPI ---
+  function queueSave(){
+    if(saveQueued) return;
+    saveQueued = true;
+    setTimeout(async ()=>{
+      saveQueued = false;
+      await saveState(state);
+      await ensureDailyBackup(state);
+      refreshBackupCount();
+    }, 150);
+  }
+
+  function setSaveHealth(txt){
+    if($("saveHealth")) $("saveHealth").textContent = txt;
+  }
+
   async function fetchJSON(url){
     const r = await fetch(url);
     if(!r.ok) throw new Error("network");
@@ -314,11 +557,10 @@
       sprite: d.sprites?.front_default || null
     };
     state.pokeCache[name] = info;
-    save();
+    queueSave();
     return info;
   }
 
-  // --- Rolls ---
   const rollGender = ()=>Math.random()<0.5 ? "M" : "F";
   const rollShiny = (src)=>Math.random() < (src==="breed" ? SHINY_BREED : SHINY_WILD);
 
@@ -333,28 +575,26 @@
     return { height: rollSize(baseIn, outlier), weight: rollSize(baseLb, outlier), outlier };
   }
 
-  // --- Egg model ---
   async function addEgg({source, species=null, hintTypes=null, poolTypes=null, arrivesAt=null, parents=null, biome=null}){
     const shiny = rollShiny(source==="breed" ? "breed" : "wild");
     const egg = {
       id: uid(),
       createdAt: now(),
       source,
-      arrivesAt,                 // for breeding eggs
+      arrivesAt,
       readyAt: (arrivesAt ? arrivesAt + HATCH_MS : now() + HATCH_MS),
-      species,                   // hidden until hatch (can be null)
-      hintTypes,                 // what you see (type hints / biome types)
-      poolTypes,                 // used to resolve hidden species for biome eggs
-      parents,                   // used to resolve hidden species for breed eggs
-      biome,                     // biome id (optional)
+      species,
+      hintTypes,
+      poolTypes,
+      parents,
+      biome,
       shiny
     };
     t().eggs.unshift(egg);
-    save();
+    queueSave();
     return egg;
   }
 
-  // --- Random picking logic (does NOT reveal species until hatch) ---
   async function pickAnySpecies(){
     const names = await getAllNames();
     return names[Math.floor(Math.random()*names.length)];
@@ -364,63 +604,55 @@
     const names = await getAllNames();
     if(!types || !types.length) return pickAnySpecies();
 
-    // prefer cached hits first (fast)
     for(let i=0;i<240;i++){
       const pick = names[Math.floor(Math.random()*names.length)];
       const cached = state.pokeCache[pick];
-      if(cached && cached.types && cached.types.some(t => types.includes(t))) return pick;
+      if(cached && cached.types && cached.types.some(x => types.includes(x))) return pick;
     }
 
-    // limited fetch attempts
     for(let i=0;i<18;i++){
       const pick = names[Math.floor(Math.random()*names.length)];
       try{
         const info = await ensureInfo(pick);
-        if(info.types && info.types.some(t => types.includes(t))) return pick;
+        if(info.types && info.types.some(x => types.includes(x))) return pick;
       }catch{}
     }
 
     return pickAnySpecies();
   }
 
-  // --- Wild egg (6h per trainer) ---
   async function claimWildEgg(){
     const last = t().flags.lastWildEggAt || 0;
     const elapsed = now() - last;
     if(elapsed < WILD_COOLDOWN) return;
 
-    // truly random, no hints
     await addEgg({source:"wild", species:null, hintTypes:["???"], poolTypes:null});
     t().flags.lastWildEggAt = now();
-    save();
+    queueSave();
     renderAll();
   }
 
-  // --- Buy egg (₱5, truly random) ---
   async function buyEgg(){
     state.money = state.money || 0;
     if(state.money < BUY_COST) return;
     state.money -= BUY_COST;
-    save();
+    queueSave();
     await addEgg({source:"purchase", species:null, hintTypes:["???"], poolTypes:null});
     renderAll();
   }
 
-  // --- Biome search ---
   function populateBiomes(){
     $("biomeSelect").innerHTML = BIOMES.map(b=>`<option value="${b.id}">${b.name} (${b.types.join("/")})</option>`).join("");
   }
 
   function startBiomeSearch(){
-    if(t().search && now() < t().search.endsAt) return; // already searching
+    if(t().search && now() < t().search.endsAt) return;
     const biomeId = $("biomeSelect").value;
     const biome = BIOMES.find(b=>b.id===biomeId) || BIOMES[0];
-
-    const minutes = 5 + Math.floor(Math.random()*26); // 5–30
+    const minutes = 5 + Math.floor(Math.random()*26);
     const endsAt = now() + minutes*60*1000;
-
     t().search = { biomeId: biome.id, endsAt, claimed:false };
-    save();
+    queueSave();
     renderAll();
   }
 
@@ -428,7 +660,6 @@
     const s = t().search;
     if(!s) return;
     if(now() < s.endsAt) return;
-    if(s.claimed) return;
 
     const biome = BIOMES.find(b=>b.id===s.biomeId);
     const types = biome ? biome.types : ["???"];
@@ -441,14 +672,11 @@
       biome: biome ? biome.id : null
     });
 
-    t().search.claimed = true;
-    // clear search after claim
     t().search = null;
-    save();
+    queueSave();
     renderAll();
   }
 
-  // --- Breeding (1/day) ---
   async function startBreed(){
     const today = dayKey();
     if(t().flags.lastBreed === today) return;
@@ -478,11 +706,10 @@
     });
 
     t().flags.lastBreed = today;
-    save();
+    queueSave();
     renderAll();
   }
 
-  // --- Hatch egg (resolve species here, show sprite on Pokémon) ---
   async function hatchEgg(eggId){
     const egg = t().eggs.find(e=>e.id===eggId);
     if(!egg) return;
@@ -490,20 +717,13 @@
     if(egg.arrivesAt && now() < egg.arrivesAt) return;
     if(now() < egg.readyAt) return;
 
-    // resolve species without revealing early
     if(!egg.species){
       if(egg.source==="breed" || egg.source==="biome"){
-        const types = egg.poolTypes || egg.parents?.type ? [egg.parents.type] : null;
+        const types = egg.poolTypes || (egg.parents?.type ? [egg.parents.type] : null);
         egg.species = await pickSpeciesByTypes(types);
       } else {
         egg.species = await pickAnySpecies();
       }
-      try{
-        const info = await ensureInfo(egg.species);
-        // update hint types after hatch resolution (still fine)
-        egg.hintTypes = info.types || egg.hintTypes;
-        save();
-      }catch{}
     }
 
     let info;
@@ -526,26 +746,24 @@
       sprite: info.sprite || null
     };
 
-    // dex
     const key = mon.name;
     if(!state.dex[key]) state.dex[key] = {firstSeen: now(), ownedCount: 0, shinySeen:false, sprite: mon.sprite || null};
     state.dex[key].ownedCount += 1;
     if(mon.shiny) state.dex[key].shinySeen = true;
     if(!state.dex[key].sprite && mon.sprite) state.dex[key].sprite = mon.sprite;
 
-    // apply
     t().eggs = t().eggs.filter(e=>e.id!==eggId);
     t().pokemon.unshift(mon);
-    save();
+    queueSave();
     renderAll();
   }
 
-  // --- Pokémon actions ---
   function toggleFavorite(monId){
     const m = t().pokemon.find(x=>x.id===monId);
     if(!m) return;
     m.favorite = !m.favorite;
-    save(); renderAll();
+    queueSave();
+    renderAll();
   }
 
   function releasePokemon(monId){
@@ -555,10 +773,10 @@
     if(!ok) return;
     t().pokemon = t().pokemon.filter(x=>x.id!==monId);
     state.money = (state.money||0) + RELEASE_REWARD;
-    save(); renderAll();
+    queueSave();
+    renderAll();
   }
 
-  // --- Trading ---
   function openTrade(){
     $("dlgTrade").showModal();
     $("tradeFrom").textContent = t().name;
@@ -585,8 +803,7 @@
       opt.value = it.id;
       if(type==="egg"){
         const hint = (it.hintTypes && it.hintTypes.length) ? it.hintTypes.join("/") : "???";
-        const src = it.source==="breed" ? `breed` : it.source;
-        opt.textContent = `${it.shiny?"✨ ":""}Egg • ${hint} • ${src}`;
+        opt.textContent = `${it.shiny?"✨ ":""}Egg • ${hint} • ${it.source}`;
       }else{
         opt.textContent = `${it.favorite?"⭐ ":""}${it.shiny?"✨ ":""}${cap(it.name)} • ${it.gender} • ${(it.types||[]).join("/")}`;
       }
@@ -625,44 +842,15 @@
       to.pokemon.unshift(item);
     }
 
-    save();
+    queueSave();
     rebuildTrade();
     renderAll();
   }
 
-  // --- Backup ---
-  function exportSave(){
-    const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href=url;
-    a.download=`eggbound_save_${dayKey()}.json`;
-    a.click();
-    setTimeout(()=>URL.revokeObjectURL(url), 1000);
-  }
-  function importSave(file){
-    const reader = new FileReader();
-    reader.onload = () => {
-      try{
-        const obj = JSON.parse(reader.result);
-        if(!obj || !obj.trainers || obj.trainers.length!==3) throw new Error("bad");
-        state = obj;
-        save();
-        renderAll();
-      }catch{}
-    };
-    reader.readAsText(file);
-  }
-  function resetAll(){
-    const ok = confirm("Reset EVERYTHING on this device? This cannot be undone.");
-    if(!ok) return;
-    localStorage.removeItem(STORE_KEY);
-    state = defaultState();
-    save();
-    renderAll();
-  }
+  /* =========================
+     Render
+     ========================= */
 
-  // --- Render helpers ---
   function matchesSearch(obj, q){
     if(!q) return true;
     q = q.toLowerCase().trim();
@@ -692,7 +880,7 @@
       const b = document.createElement("div");
       b.className = "tab"+(i===state.active?" active":"");
       b.textContent = tr.name;
-      b.onclick = ()=>{ state.active=i; save(); renderAll(); };
+      b.onclick = ()=>{ state.active=i; queueSave(); renderAll(); };
       el.appendChild(b);
     });
   }
@@ -718,7 +906,6 @@
     $("btnBuyEgg").disabled = (state.money||0) < BUY_COST;
     $("buyText").textContent = need>0 ? `Need ${need} more ₱ to buy an egg (release Pokémon to earn).` : "";
 
-    // biome search status
     const s = t().search;
     if(!s){
       $("searchText").textContent = "Not searching.";
@@ -750,7 +937,6 @@
     $("parentA").innerHTML = `<option value="">Select…</option>` + opts;
     $("parentB").innerHTML = `<option value="">Select…</option>` + opts;
 
-    // auto-pick a valid pair if possible
     outer: for(const a of t().pokemon){
       for(const b of t().pokemon){
         if(a.id===b.id) continue;
@@ -879,7 +1065,98 @@
     if($("dlgTrade").open) rebuildTrade();
   }
 
-  // --- Dynamic button clicks ---
+  /* =========================
+     Save Tools UI
+     ========================= */
+
+  async function refreshBackupCount(){
+    try{
+      const all = await idbListBackups();
+      $("backupCount").textContent = String(all.length);
+    }catch{
+      $("backupCount").textContent = "0";
+    }
+  }
+
+  async function backupNow(){
+    await makeBackup(state, `Manual ${new Date().toLocaleString()}`);
+    $("saveMsg").textContent = "✅ Backup created.";
+    refreshBackupCount();
+  }
+
+  async function downloadLatestBackup(){
+    const latest = await getLatestBackup();
+    if(!latest){
+      $("saveMsg").textContent = "No backups yet.";
+      return;
+    }
+    const blob = new Blob([JSON.stringify(latest.state,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href=url;
+    a.download=`eggbound_backup_${dayKey(latest.ts)}.json`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    $("saveMsg").textContent = "⬇️ Downloaded latest backup.";
+  }
+
+  async function restoreFromFile(file){
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try{
+        const obj = JSON.parse(reader.result);
+        if(!obj || !obj.trainers || obj.trainers.length!==3) throw new Error("bad");
+        state = obj;
+        await saveState(state);
+        await makeBackup(state, `Restore ${new Date().toLocaleString()}`);
+        $("saveMsg").textContent = "✅ Restored from backup file.";
+        renderAll();
+        refreshBackupCount();
+      }catch{
+        $("saveMsg").textContent = "❌ That file didn’t look like an EggBound save.";
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function genCode(){
+    try{
+      $("saveCode").value = toSaveCode(state);
+      $("saveMsg").textContent = "✅ Code generated. Copy it somewhere safe.";
+    }catch{
+      $("saveMsg").textContent = "❌ Could not generate code.";
+    }
+  }
+
+  async function restoreCode(){
+    try{
+      const code = $("saveCode").value.trim();
+      const obj = fromSaveCode(code);
+      if(!obj || !obj.trainers || obj.trainers.length!==3) throw new Error("bad");
+      state = obj;
+      await saveState(state);
+      await makeBackup(state, `RestoreCode ${new Date().toLocaleString()}`);
+      $("saveMsg").textContent = "✅ Restored from code.";
+      renderAll();
+      refreshBackupCount();
+    }catch{
+      $("saveMsg").textContent = "❌ Code was invalid.";
+    }
+  }
+
+  async function copyCode(){
+    try{
+      await navigator.clipboard.writeText($("saveCode").value);
+      $("saveMsg").textContent = "📋 Copied.";
+    }catch{
+      $("saveMsg").textContent = "Copy failed (try long-press → copy).";
+    }
+  }
+
+  /* =========================
+     Wire events
+     ========================= */
+
   document.addEventListener("click", (e)=>{
     const el = e.target;
     if(!el) return;
@@ -897,7 +1174,6 @@
     if(relId){ releasePokemon(relId); return; }
   });
 
-  // --- Wire static buttons ---
   $("btnWildEgg").addEventListener("click", claimWildEgg);
   $("btnBuyEgg").addEventListener("click", buyEgg);
 
@@ -919,36 +1195,77 @@
   });
   $("btnCloseNames").addEventListener("click", ()=>$("dlgNames").close());
   $("btnSaveNames").addEventListener("click", ()=>{
-    state.trainers[0].name = $("n1").value.trim() || "Dad";
-    state.trainers[1].name = $("n2").value.trim() || "Evan";
-    state.trainers[2].name = $("n3").value.trim() || "Reid";
-    save();
+    state.trainers[0].name = $("n1").value.trim() || "Trainer 1";
+    state.trainers[1].name = $("n2").value.trim() || "Trainer 2";
+    state.trainers[2].name = $("n3").value.trim() || "Trainer 3";
+    queueSave();
     $("dlgNames").close();
     renderAll();
   });
 
-  $("btnExport").addEventListener("click", exportSave);
-  $("fileImport").addEventListener("change", (ev)=>{
+  $("btnSaveTools").addEventListener("click", async ()=>{
+    $("dlgSave").showModal();
+    $("saveMsg").textContent = "";
+    await refreshBackupCount();
+  });
+  $("btnCloseSave").addEventListener("click", ()=>$("dlgSave").close());
+  $("btnBackupNow").addEventListener("click", backupNow);
+  $("btnDownloadBackup").addEventListener("click", downloadLatestBackup);
+  $("fileRestore").addEventListener("change", (ev)=>{
     const f = ev.target.files && ev.target.files[0];
-    if(f) importSave(f);
+    if(f) restoreFromFile(f);
     ev.target.value = "";
   });
-  $("btnReset").addEventListener("click", resetAll);
+  $("btnGenCode").addEventListener("click", genCode);
+  $("btnRestoreCode").addEventListener("click", restoreCode);
+  $("btnCopyCode").addEventListener("click", copyCode);
+
+  $("btnReset").addEventListener("click", async ()=>{
+    const ok = confirm("Reset EVERYTHING on this device? This cannot be undone.");
+    if(!ok) return;
+    // clear DB
+    await new Promise((resolve)=>{ const r=indexedDB.deleteDatabase(DB_NAME); r.onsuccess=r.onerror=r.onblocked=()=>resolve(); });
+    try{ localStorage.removeItem("eggbound_legacy_mirror"); }catch{}
+    state = defaultState();
+    await saveState(state);
+    await makeBackup(state, "Fresh Start");
+    renderAll();
+  });
 
   $("search").addEventListener("input", renderView);
   $("sort").addEventListener("change", renderView);
 
   // Live timers
-  setInterval(()=>{ renderEggButtons(); renderView(); }, 1000);
+  setInterval(()=>{ if(state){ renderEggButtons(); renderView(); } }, 1000);
 
-  // SW
-  if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  // Init biomes
+  function populateBiomes(){
+    $("biomeSelect").innerHTML = BIOMES.map(b=>`<option value="${b.id}">${b.name} (${b.types.join("/")})</option>`).join("");
   }
 
-  // init
-  populateBiomes();
-  renderAll();
+  // Startup
+  (async function boot(){
+    try{
+      state = await loadState();
+      await saveState(state);         // ensure DB written
+      await ensureDailyBackup(state); // daily backup
+      await refreshBackupCount();
+      setSaveHealth("OK");
+    }catch{
+      state = defaultState();
+      try{ await saveState(state); }catch{}
+      setSaveHealth("Degraded");
+    }
+
+    populateBiomes();
+    renderAll();
+
+    // SW
+    if("serviceWorker" in navigator){
+      navigator.serviceWorker.register("sw.js").catch(()=>{});
+    }
+  })();
+
 })();
 </script>
 </body>
