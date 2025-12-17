@@ -6,244 +6,950 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0b1220" />
-
   <style>
-    body{
-      margin:0;
-      font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background:#0b1220;
-      color:#e5e7eb;
+    :root{
+      --bg:#0b1220; --panel:#020617; --text:#e5e7eb; --muted:#94a3b8;
+      --line:rgba(255,255,255,.1); --blue:#2563eb; --warn:#ca8a04; --bad:#dc2626; --good:#16a34a;
+      --chip:rgba(255,255,255,.06);
     }
-    header{
-      padding:16px;
-      background:linear-gradient(135deg,#1e293b,#020617);
-      border-bottom:1px solid rgba(255,255,255,.1);
-    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+    header{padding:16px;background:linear-gradient(135deg,#1e293b,#020617);border-bottom:1px solid var(--line)}
     h1{margin:0;font-size:20px}
-    .sub{font-size:12px;color:#94a3b8}
-
-    .wrap{padding:14px;max-width:1000px;margin:auto}
-    .tabs{display:flex;gap:8px;margin-bottom:12px}
-    .tab{
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.1);
-      cursor:pointer;
-      font-size:12px;
-      background:#020617;
-    }
-    .tab.active{background:#2563eb}
-
-    .panel{
-      background:#020617;
-      border:1px solid rgba(255,255,255,.1);
-      border-radius:16px;
-      padding:14px;
-      margin-bottom:14px;
-    }
-
-    button{
-      background:#2563eb;
-      color:white;
-      border:none;
-      padding:10px 14px;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:600;
-    }
-    button.warn{background:#ca8a04}
-    button.danger{background:#dc2626}
+    .sub{font-size:12px;color:var(--muted)}
+    .wrap{padding:14px;max-width:1100px;margin:auto}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{padding:8px 12px;border-radius:999px;border:1px solid var(--line);cursor:pointer;font-size:12px;background:var(--panel);user-select:none}
+    .tab.active{background:var(--blue)}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+    .grid{display:grid;grid-template-columns:380px 1fr;gap:14px}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+    button{background:var(--blue);color:white;border:none;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:800}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    button.warn{background:var(--warn)}
+    button.danger{background:var(--bad)}
+    button.good{background:var(--good)}
+    button.ghost{background:transparent;border:1px solid var(--line)}
     button.small{padding:6px 10px;font-size:12px}
-
-    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .muted{color:var(--muted);font-size:12px}
     .list{display:flex;flex-direction:column;gap:10px}
-
-    .card{
-      background:#020617;
-      border:1px solid rgba(255,255,255,.1);
-      border-radius:14px;
-      padding:10px;
+    .card{background:#020617;border:1px solid var(--line);border-radius:14px;padding:10px}
+    .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+    .chip{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;border:1px solid rgba(255,255,255,.14);background:var(--chip);color:var(--muted)}
+    .chip.shiny{border-color:rgba(16,185,129,.55);color:#a7f3d0}
+    .chip.fav{border-color:rgba(251,191,36,.55);color:#fde68a}
+    select,input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0b1220;color:var(--text);outline:none}
+    label{display:block;margin:10px 0 6px;color:var(--muted);font-size:12px}
+    dialog{border:none;border-radius:16px;padding:0;background:transparent}
+    dialog::backdrop{background:rgba(0,0,0,.65)}
+    .modal{background:linear-gradient(135deg,#0b1220,#020617);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:min(860px,calc(100vw - 28px))}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+    .kpi{border:1px solid var(--line);border-radius:14px;padding:10px;background:rgba(255,255,255,.02)}
+    .kpi .v{font-weight:900;font-size:18px}
+    .kpi .l{font-size:11px;color:var(--muted);margin-top:2px}
+    .hr{height:1px;background:var(--line);margin:12px 0}
+    .sprite{
+      width:44px;height:44px;border-radius:14px;border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      display:flex;align-items:center;justify-content:center;overflow:hidden;
     }
-
-    .chip{
-      display:inline-block;
-      padding:3px 8px;
-      border-radius:999px;
-      font-size:11px;
-      border:1px solid rgba(255,255,255,.15);
-      margin-right:4px;
-    }
-
-    .muted{color:#94a3b8;font-size:12px}
+    .sprite img{width:44px;height:44px;image-rendering:pixelated}
   </style>
 </head>
 <body>
-
 <header>
   <h1>EggBound — Family Hatch</h1>
-  <div class="sub">One device • 3 trainers • eggs • shinies • trading • collecting</div>
+  <div class="sub">3 trainers • mystery eggs • biome searching • breeding • trading • shinies • sprites • release for ₱</div>
 </header>
 
 <div class="wrap">
-
   <div class="tabs" id="trainerTabs"></div>
 
-  <div class="panel">
-    <div class="row">
-      <button id="btnWildEgg">Claim Wild Egg (6h)</button>
-      <button class="warn" id="btnBuyEgg">Buy Egg (5 ₱)</button>
-      <div class="muted">PokéDollars: <b id="money">0</b></div>
-    </div>
-    <div class="muted" id="cooldownText"></div>
-  </div>
+  <div class="grid">
+    <section class="panel">
+      <div class="row">
+        <div>
+          <div class="muted">Local date: <span class="mono" id="today"></span></div>
+          <div class="muted">Trainer: <b id="trainerName"></b></div>
+        </div>
+        <div class="row" style="justify-content:flex-end;gap:8px">
+          <button class="ghost" id="btnExport">Export</button>
+          <label class="ghost" style="padding:10px 14px;border-radius:12px;border:1px solid var(--line);cursor:pointer">
+            Import <input id="fileImport" type="file" accept="application/json" style="display:none">
+          </label>
+          <button class="danger" id="btnReset">Reset</button>
+        </div>
+      </div>
 
-  <div class="panel">
-    <h3>Eggs</h3>
-    <div class="list" id="eggList"></div>
-  </div>
+      <div class="kpis">
+        <div class="kpi"><div class="v" id="kPoke">0</div><div class="l">Pokémon</div></div>
+        <div class="kpi"><div class="v" id="kEgg">0</div><div class="l">Eggs</div></div>
+        <div class="kpi"><div class="v" id="kShiny">0</div><div class="l">Shinies</div></div>
+        <div class="kpi"><div class="v" id="kMoney">0</div><div class="l">PokéDollars</div></div>
+      </div>
 
-  <div class="panel">
-    <h3>Pokémon</h3>
-    <div class="list" id="pokeList"></div>
-  </div>
+      <div class="hr"></div>
 
+      <h3 style="margin:0 0 8px">Eggs</h3>
+      <div class="row" style="justify-content:flex-start">
+        <button id="btnWildEgg">Claim Wild Egg (6h)</button>
+        <button class="warn" id="btnBuyEgg">Buy Egg (5 ₱)</button>
+        <div class="muted">Balance: <b id="money">0</b> ₱</div>
+      </div>
+      <div class="muted" id="cooldownText" style="margin-top:6px"></div>
+      <div class="muted" id="buyText" style="margin-top:6px"></div>
+
+      <div class="hr"></div>
+
+      <h3 style="margin:0 0 8px">Biome Search</h3>
+      <div class="muted">Each trainer can search for <b>one</b> biome egg at a time. Search takes <b>5–30 minutes</b>. Egg is still a mystery until hatch.</div>
+      <label>Biome</label>
+      <select id="biomeSelect"></select>
+      <div class="row" style="justify-content:flex-start;margin-top:10px">
+        <button class="good" id="btnStartSearch">Start Search</button>
+        <button class="warn" id="btnClaimSearchEgg" disabled>Claim Found Egg</button>
+        <div class="muted" id="searchText"></div>
+      </div>
+
+      <div class="hr"></div>
+
+      <h3 style="margin:0 0 8px">Breeding (1/day)</h3>
+      <div class="muted">Pick 2 Pokémon of different genders that share at least one type. Egg arrives <b>tomorrow</b>, hatches <b>1 hour</b> after arrival. Species stays hidden until hatch.</div>
+      <label>Parent A</label>
+      <select id="parentA"></select>
+      <label>Parent B</label>
+      <select id="parentB"></select>
+      <div class="row" style="justify-content:flex-start;margin-top:10px">
+        <button class="good" id="btnBreed">Start Breed</button>
+        <div class="muted" id="breedText"></div>
+      </div>
+
+      <div class="hr"></div>
+
+      <h3 style="margin:0 0 8px">Trading</h3>
+      <div class="muted">Trade eggs or Pokémon between your 3 trainers instantly.</div>
+      <div class="row" style="justify-content:flex-start;margin-top:10px">
+        <button class="warn" id="btnTrade">Open Trade Center</button>
+        <button class="ghost" id="btnEditNames">Edit Names</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="tabs">
+        <div class="tab active" data-view="eggs">Egg Vault</div>
+        <div class="tab" data-view="pokemon">Pokémon</div>
+        <div class="tab" data-view="dex">Dex</div>
+      </div>
+
+      <div class="row" style="justify-content:flex-start;margin-top:10px">
+        <input id="search" placeholder="Search (name / type / shiny)" style="flex:1;min-width:220px" />
+        <select id="sort" style="width:220px">
+          <option value="newest">Sort: Newest</option>
+          <option value="oldest">Sort: Oldest</option>
+          <option value="name">Sort: Name</option>
+          <option value="shiny">Sort: Shiny first</option>
+        </select>
+      </div>
+
+      <div class="hr"></div>
+
+      <div id="view-eggs" class="list"></div>
+      <div id="view-pokemon" class="list" style="display:none"></div>
+      <div id="view-dex" style="display:none">
+        <div class="muted">Dex tracks owned species + shiny seen. Shows sprites once you’ve hatched that species.</div>
+        <div class="hr"></div>
+        <div class="list" id="dexList"></div>
+      </div>
+    </section>
+  </div>
 </div>
 
+<!-- Names Modal -->
+<dialog id="dlgNames">
+  <div class="modal">
+    <div class="row">
+      <h3 style="margin:0">Edit Trainer Names</h3>
+      <button class="ghost" id="btnCloseNames">Close</button>
+    </div>
+    <label>Trainer 1</label><input id="n1">
+    <label>Trainer 2</label><input id="n2">
+    <label>Trainer 3</label><input id="n3">
+    <div class="row" style="justify-content:flex-start;margin-top:12px">
+      <button id="btnSaveNames">Save</button>
+      <div class="muted">Stored only on this device.</div>
+    </div>
+  </div>
+</dialog>
+
+<!-- Trade Modal -->
+<dialog id="dlgTrade">
+  <div class="modal">
+    <div class="row">
+      <h3 style="margin:0">Trade Center</h3>
+      <button class="ghost" id="btnCloseTrade">Close</button>
+    </div>
+    <div class="muted">From: <b id="tradeFrom"></b></div>
+
+    <label>Trade Type</label>
+    <select id="tradeType">
+      <option value="pokemon">Pokémon</option>
+      <option value="egg">Egg</option>
+    </select>
+
+    <label>Item</label>
+    <select id="tradeItem"></select>
+
+    <label>To Trainer</label>
+    <select id="tradeTo"></select>
+
+    <div class="row" style="justify-content:flex-start;margin-top:12px">
+      <button class="warn" id="btnDoTrade">Confirm Trade</button>
+      <div class="muted" id="tradeText"></div>
+    </div>
+  </div>
+</dialog>
+
 <script>
-/* ---------------- CORE STATE ---------------- */
+(() => {
+  "use strict";
 
-const POKEAPI = "https://pokeapi.co/api/v2/pokemon?limit=2000";
-const STORE_KEY = "eggbound_clean_v1";
+  // --- Core rules ---
+  const STORE_KEY = "eggbound_polished_v2";
+  const POKEAPI_LIST = "https://pokeapi.co/api/v2/pokemon?limit=2000&offset=0";
+  const POKEAPI = "https://pokeapi.co/api/v2/pokemon/";
+  const WILD_COOLDOWN = 6*60*60*1000;
+  const HATCH_MS = 1*60*60*1000;
+  const SHINY_WILD = 1/256;
+  const SHINY_BREED = 1/192;
+  const OUTLIER_CHANCE = 0.05; // 5%
+  const NORMAL_RANGE = 0.10;   // ±10%
+  const OUTLIER_RANGE = 0.20;  // ±20%
+  const BUY_COST = 5;
+  const RELEASE_REWARD = 1;
 
-const now = ()=>Date.now();
-const uid = ()=>Math.random().toString(16).slice(2);
+  // --- Biomes (tunable any time) ---
+  const BIOMES = [
+    { id:"forest",   name:"Forest",   types:["grass","bug","normal"] },
+    { id:"mountain", name:"Mountain", types:["rock","ground","ice"] },
+    { id:"ocean",    name:"Ocean",    types:["water","ice"] },
+    { id:"cave",     name:"Cave",     types:["rock","ghost","poison"] },
+    { id:"desert",   name:"Desert",   types:["ground","fire"] },
+    { id:"swamp",    name:"Swamp",    types:["poison","water","grass"] },
+    { id:"sky",      name:"Sky",      types:["flying","electric"] },
+    { id:"city",     name:"City",     types:["normal","steel","electric"] },
+    { id:"volcano",  name:"Volcano",  types:["fire","rock"] },
+    { id:"tundra",   name:"Tundra",   types:["ice"] }
+  ];
 
-function defaultState(){
-  return {
-    money:0,
-    active:0,
-    trainers:[
-      {name:"Dad", eggs:[], pokemon:[], lastEgg:0},
-      {name:"Evan", eggs:[], pokemon:[], lastEgg:0},
-      {name:"Reid", eggs:[], pokemon:[], lastEgg:0},
-    ]
+  // --- Helpers ---
+  const $ = (id)=>document.getElementById(id);
+  const now = ()=>Date.now();
+  const uid = ()=>Math.random().toString(16).slice(2)+"-"+Math.random().toString(16).slice(2);
+  const cap = (s)=>s ? (s[0].toUpperCase()+s.slice(1)) : "";
+  const dayKey = (ts=Date.now()) => {
+    const d=new Date(ts);
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), dd=String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${dd}`;
   };
-}
+  const tomorrowMidnight = (ts=Date.now()) => { const d=new Date(ts); d.setHours(24,0,0,0); return d.getTime(); };
+  const fmtLeft = (ms)=>{
+    if(!Number.isFinite(ms) || ms<=0) return "Ready!";
+    const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), ss=s%60;
+    if(h>0) return `${h}h ${m}m`;
+    if(m>0) return `${m}m ${ss}s`;
+    return `${ss}s`;
+  };
 
-let state = JSON.parse(localStorage.getItem(STORE_KEY)) || defaultState();
-const save = ()=>localStorage.setItem(STORE_KEY, JSON.stringify(state));
-const t = ()=>state.trainers[state.active];
-
-/* ---------------- HELPERS ---------------- */
-
-async function getRandomSpecies(){
-  if(!window._all){
-    const r = await fetch(POKEAPI);
-    const d = await r.json();
-    window._all = d.results.map(x=>x.name);
+  function defaultState(){
+    return {
+      money:0,
+      active:0,
+      trainers:[
+        {name:"Trainer 1", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
+        {name:"Trainer 2", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
+        {name:"Trainer 3", eggs:[], pokemon:[], flags:{lastWildEggAt:0, lastBreed:null}, search:null},
+      ],
+      pokeCache:{}, // name -> {types, heightIn, weightLb, sprite}
+      dex:{}        // name -> {firstSeen, ownedCount, shinySeen, sprite}
+    };
   }
-  return window._all[Math.floor(Math.random()*window._all.length)];
-}
 
-async function getInfo(name){
-  const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-  const d = await r.json();
-  return {
-    types:d.types.map(t=>t.type.name),
-    height:d.height*3.94,
-    weight:d.weight*0.22
-  };
-}
+  let state;
+  try { state = JSON.parse(localStorage.getItem(STORE_KEY)) || defaultState(); }
+  catch { state = defaultState(); }
 
-function rollSize(base){
-  const out = Math.random()<0.05;
-  const r = out ? 0.8+Math.random()*0.4 : 0.9+Math.random()*0.2;
-  return Math.round(base*r*10)/10;
-}
+  const save = ()=>localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  const t = ()=>state.trainers[state.active];
 
-/* ---------------- ACTIONS ---------------- */
+  // --- PokéAPI ---
+  async function fetchJSON(url){
+    const r = await fetch(url);
+    if(!r.ok) throw new Error("network");
+    return await r.json();
+  }
 
-async function claimEgg(ignore=false){
-  if(!ignore && now()-t().lastEgg < 6*60*60*1000) return;
-  const species = await getRandomSpecies();
-  t().lastEgg = now();
-  t().eggs.push({
-    id:uid(),
-    species,
-    ready:now()+60*60*1000,
-    shiny:Math.random()<1/256
+  async function getAllNames(){
+    if(getAllNames._list) return getAllNames._list;
+    try{
+      const d = await fetchJSON(POKEAPI_LIST);
+      getAllNames._list = d.results.map(x=>x.name);
+    }catch{
+      getAllNames._list = ["pikachu","bulbasaur","charmander","squirtle","eevee","pidgey","geodude","gastly","magikarp","dratini"];
+    }
+    return getAllNames._list;
+  }
+
+  function toInches(dm){ return dm * 3.937007874; }
+  function toPounds(hg){ return hg * 0.220462262; }
+
+  async function ensureInfo(name){
+    name = String(name||"").toLowerCase();
+    if(state.pokeCache[name]) return state.pokeCache[name];
+    const d = await fetchJSON(POKEAPI+name);
+    const info = {
+      types: (d.types||[]).map(x=>x.type.name),
+      heightIn: d.height!=null ? toInches(d.height) : 24,
+      weightLb: d.weight!=null ? toPounds(d.weight) : 10,
+      sprite: d.sprites?.front_default || null
+    };
+    state.pokeCache[name] = info;
+    save();
+    return info;
+  }
+
+  // --- Rolls ---
+  const rollGender = ()=>Math.random()<0.5 ? "M" : "F";
+  const rollShiny = (src)=>Math.random() < (src==="breed" ? SHINY_BREED : SHINY_WILD);
+
+  function rollSize(base, isOutlier){
+    const range = isOutlier ? OUTLIER_RANGE : NORMAL_RANGE;
+    const lo = 1-range, hi = 1+range;
+    const mult = lo + Math.random()*(hi-lo);
+    return Math.round(Math.max(0.1, base*mult)*10)/10;
+  }
+  function rollHeightWeight(baseIn, baseLb){
+    const outlier = Math.random() < OUTLIER_CHANCE;
+    return { height: rollSize(baseIn, outlier), weight: rollSize(baseLb, outlier), outlier };
+  }
+
+  // --- Egg model ---
+  async function addEgg({source, species=null, hintTypes=null, poolTypes=null, arrivesAt=null, parents=null, biome=null}){
+    const shiny = rollShiny(source==="breed" ? "breed" : "wild");
+    const egg = {
+      id: uid(),
+      createdAt: now(),
+      source,
+      arrivesAt,                 // for breeding eggs
+      readyAt: (arrivesAt ? arrivesAt + HATCH_MS : now() + HATCH_MS),
+      species,                   // hidden until hatch (can be null)
+      hintTypes,                 // what you see (type hints / biome types)
+      poolTypes,                 // used to resolve hidden species for biome eggs
+      parents,                   // used to resolve hidden species for breed eggs
+      biome,                     // biome id (optional)
+      shiny
+    };
+    t().eggs.unshift(egg);
+    save();
+    return egg;
+  }
+
+  // --- Random picking logic (does NOT reveal species until hatch) ---
+  async function pickAnySpecies(){
+    const names = await getAllNames();
+    return names[Math.floor(Math.random()*names.length)];
+  }
+
+  async function pickSpeciesByTypes(types){
+    const names = await getAllNames();
+    if(!types || !types.length) return pickAnySpecies();
+
+    // prefer cached hits first (fast)
+    for(let i=0;i<240;i++){
+      const pick = names[Math.floor(Math.random()*names.length)];
+      const cached = state.pokeCache[pick];
+      if(cached && cached.types && cached.types.some(t => types.includes(t))) return pick;
+    }
+
+    // limited fetch attempts
+    for(let i=0;i<18;i++){
+      const pick = names[Math.floor(Math.random()*names.length)];
+      try{
+        const info = await ensureInfo(pick);
+        if(info.types && info.types.some(t => types.includes(t))) return pick;
+      }catch{}
+    }
+
+    return pickAnySpecies();
+  }
+
+  // --- Wild egg (6h per trainer) ---
+  async function claimWildEgg(){
+    const last = t().flags.lastWildEggAt || 0;
+    const elapsed = now() - last;
+    if(elapsed < WILD_COOLDOWN) return;
+
+    // truly random, no hints
+    await addEgg({source:"wild", species:null, hintTypes:["???"], poolTypes:null});
+    t().flags.lastWildEggAt = now();
+    save();
+    renderAll();
+  }
+
+  // --- Buy egg (₱5, truly random) ---
+  async function buyEgg(){
+    state.money = state.money || 0;
+    if(state.money < BUY_COST) return;
+    state.money -= BUY_COST;
+    save();
+    await addEgg({source:"purchase", species:null, hintTypes:["???"], poolTypes:null});
+    renderAll();
+  }
+
+  // --- Biome search ---
+  function populateBiomes(){
+    $("biomeSelect").innerHTML = BIOMES.map(b=>`<option value="${b.id}">${b.name} (${b.types.join("/")})</option>`).join("");
+  }
+
+  function startBiomeSearch(){
+    if(t().search && now() < t().search.endsAt) return; // already searching
+    const biomeId = $("biomeSelect").value;
+    const biome = BIOMES.find(b=>b.id===biomeId) || BIOMES[0];
+
+    const minutes = 5 + Math.floor(Math.random()*26); // 5–30
+    const endsAt = now() + minutes*60*1000;
+
+    t().search = { biomeId: biome.id, endsAt, claimed:false };
+    save();
+    renderAll();
+  }
+
+  async function claimBiomeEgg(){
+    const s = t().search;
+    if(!s) return;
+    if(now() < s.endsAt) return;
+    if(s.claimed) return;
+
+    const biome = BIOMES.find(b=>b.id===s.biomeId);
+    const types = biome ? biome.types : ["???"];
+
+    await addEgg({
+      source:"biome",
+      species:null,
+      hintTypes:[`Biome: ${biome ? biome.name : "Unknown"}`].concat(types),
+      poolTypes: types,
+      biome: biome ? biome.id : null
+    });
+
+    t().search.claimed = true;
+    // clear search after claim
+    t().search = null;
+    save();
+    renderAll();
+  }
+
+  // --- Breeding (1/day) ---
+  async function startBreed(){
+    const today = dayKey();
+    if(t().flags.lastBreed === today) return;
+
+    const aId = $("parentA").value;
+    const bId = $("parentB").value;
+    if(!aId || !bId || aId===bId) return;
+
+    const a = t().pokemon.find(x=>x.id===aId);
+    const b = t().pokemon.find(x=>x.id===bId);
+    if(!a || !b) return;
+    if(a.gender === b.gender) return;
+
+    const shared = (a.types||[]).filter(x => (b.types||[]).includes(x));
+    if(shared.length === 0) return;
+
+    const sharedType = shared[Math.floor(Math.random()*shared.length)];
+    const arrive = tomorrowMidnight();
+
+    await addEgg({
+      source:"breed",
+      species:null,
+      hintTypes:[`Breed: ${sharedType}`],
+      poolTypes:[sharedType],
+      arrivesAt: arrive,
+      parents:{a:a.name,b:b.name,type:sharedType}
+    });
+
+    t().flags.lastBreed = today;
+    save();
+    renderAll();
+  }
+
+  // --- Hatch egg (resolve species here, show sprite on Pokémon) ---
+  async function hatchEgg(eggId){
+    const egg = t().eggs.find(e=>e.id===eggId);
+    if(!egg) return;
+
+    if(egg.arrivesAt && now() < egg.arrivesAt) return;
+    if(now() < egg.readyAt) return;
+
+    // resolve species without revealing early
+    if(!egg.species){
+      if(egg.source==="breed" || egg.source==="biome"){
+        const types = egg.poolTypes || egg.parents?.type ? [egg.parents.type] : null;
+        egg.species = await pickSpeciesByTypes(types);
+      } else {
+        egg.species = await pickAnySpecies();
+      }
+      try{
+        const info = await ensureInfo(egg.species);
+        // update hint types after hatch resolution (still fine)
+        egg.hintTypes = info.types || egg.hintTypes;
+        save();
+      }catch{}
+    }
+
+    let info;
+    try{ info = await ensureInfo(egg.species); }
+    catch{ info = {types:[], heightIn:24, weightLb:10, sprite:null}; }
+
+    const sz = rollHeightWeight(info.heightIn, info.weightLb);
+
+    const mon = {
+      id: uid(),
+      name: egg.species,
+      types: info.types || [],
+      gender: rollGender(),
+      shiny: !!egg.shiny,
+      height: sz.height,
+      weight: sz.weight,
+      outlier: sz.outlier,
+      favorite: false,
+      hatchedAt: now(),
+      sprite: info.sprite || null
+    };
+
+    // dex
+    const key = mon.name;
+    if(!state.dex[key]) state.dex[key] = {firstSeen: now(), ownedCount: 0, shinySeen:false, sprite: mon.sprite || null};
+    state.dex[key].ownedCount += 1;
+    if(mon.shiny) state.dex[key].shinySeen = true;
+    if(!state.dex[key].sprite && mon.sprite) state.dex[key].sprite = mon.sprite;
+
+    // apply
+    t().eggs = t().eggs.filter(e=>e.id!==eggId);
+    t().pokemon.unshift(mon);
+    save();
+    renderAll();
+  }
+
+  // --- Pokémon actions ---
+  function toggleFavorite(monId){
+    const m = t().pokemon.find(x=>x.id===monId);
+    if(!m) return;
+    m.favorite = !m.favorite;
+    save(); renderAll();
+  }
+
+  function releasePokemon(monId){
+    const m = t().pokemon.find(x=>x.id===monId);
+    if(!m) return;
+    const ok = confirm(`Release ${cap(m.name)}${m.shiny?" ✨":""}${m.favorite?" ⭐":""}? This is forever.`);
+    if(!ok) return;
+    t().pokemon = t().pokemon.filter(x=>x.id!==monId);
+    state.money = (state.money||0) + RELEASE_REWARD;
+    save(); renderAll();
+  }
+
+  // --- Trading ---
+  function openTrade(){
+    $("dlgTrade").showModal();
+    $("tradeFrom").textContent = t().name;
+    rebuildTrade();
+  }
+
+  function rebuildTrade(){
+    const fromIdx = state.active;
+    const type = $("tradeType").value;
+
+    $("tradeTo").innerHTML = "";
+    state.trainers.forEach((tr, idx)=>{
+      if(idx===fromIdx) return;
+      const opt = document.createElement("option");
+      opt.value = String(idx);
+      opt.textContent = tr.name;
+      $("tradeTo").appendChild(opt);
+    });
+
+    const items = (type==="egg") ? t().eggs : t().pokemon;
+    $("tradeItem").innerHTML = "";
+    items.forEach(it=>{
+      const opt = document.createElement("option");
+      opt.value = it.id;
+      if(type==="egg"){
+        const hint = (it.hintTypes && it.hintTypes.length) ? it.hintTypes.join("/") : "???";
+        const src = it.source==="breed" ? `breed` : it.source;
+        opt.textContent = `${it.shiny?"✨ ":""}Egg • ${hint} • ${src}`;
+      }else{
+        opt.textContent = `${it.favorite?"⭐ ":""}${it.shiny?"✨ ":""}${cap(it.name)} • ${it.gender} • ${(it.types||[]).join("/")}`;
+      }
+      $("tradeItem").appendChild(opt);
+    });
+
+    $("tradeText").textContent = items.length ? "" : "Nothing to trade yet.";
+  }
+
+  function doTrade(){
+    const type = $("tradeType").value;
+    const itemId = $("tradeItem").value;
+    const toIdx = Number($("tradeTo").value);
+    if(!Number.isFinite(toIdx)) return;
+
+    const from = state.trainers[state.active];
+    const to = state.trainers[toIdx];
+    if(!from || !to) return;
+
+    let item = null;
+    if(type==="egg") item = from.eggs.find(e=>e.id===itemId);
+    else item = from.pokemon.find(p=>p.id===itemId);
+    if(!item) return;
+
+    const risky = (type==="egg" && item.shiny) || (type==="pokemon" && (item.shiny || item.favorite));
+    if(risky){
+      const ok = confirm("This trade includes a shiny and/or favorite. Continue?");
+      if(!ok) return;
+    }
+
+    if(type==="egg"){
+      from.eggs = from.eggs.filter(e=>e.id!==itemId);
+      to.eggs.unshift(item);
+    }else{
+      from.pokemon = from.pokemon.filter(p=>p.id!==itemId);
+      to.pokemon.unshift(item);
+    }
+
+    save();
+    rebuildTrade();
+    renderAll();
+  }
+
+  // --- Backup ---
+  function exportSave(){
+    const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href=url;
+    a.download=`eggbound_save_${dayKey()}.json`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  }
+  function importSave(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const obj = JSON.parse(reader.result);
+        if(!obj || !obj.trainers || obj.trainers.length!==3) throw new Error("bad");
+        state = obj;
+        save();
+        renderAll();
+      }catch{}
+    };
+    reader.readAsText(file);
+  }
+  function resetAll(){
+    const ok = confirm("Reset EVERYTHING on this device? This cannot be undone.");
+    if(!ok) return;
+    localStorage.removeItem(STORE_KEY);
+    state = defaultState();
+    save();
+    renderAll();
+  }
+
+  // --- Render helpers ---
+  function matchesSearch(obj, q){
+    if(!q) return true;
+    q = q.toLowerCase().trim();
+    const hay = [
+      obj.name||"",
+      ...(obj.types||[]),
+      obj.shiny ? "shiny" : "",
+      obj.gender||"",
+      obj.source||""
+    ].join(" ").toLowerCase();
+    return hay.includes(q);
+  }
+
+  function sortItems(arr, mode){
+    const a = [...arr];
+    if(mode==="newest") a.sort((x,y)=>(y.hatchedAt||y.createdAt||0)-(x.hatchedAt||x.createdAt||0));
+    if(mode==="oldest") a.sort((x,y)=>(x.hatchedAt||x.createdAt||0)-(y.hatchedAt||y.createdAt||0));
+    if(mode==="name") a.sort((x,y)=>(x.name||"").localeCompare(y.name||""));
+    if(mode==="shiny") a.sort((x,y)=>(y.shiny?1:0)-(x.shiny?1:0));
+    return a;
+  }
+
+  function renderTabs(){
+    const el = $("trainerTabs");
+    el.innerHTML = "";
+    state.trainers.forEach((tr,i)=>{
+      const b = document.createElement("div");
+      b.className = "tab"+(i===state.active?" active":"");
+      b.textContent = tr.name;
+      b.onclick = ()=>{ state.active=i; save(); renderAll(); };
+      el.appendChild(b);
+    });
+  }
+
+  function renderKPIs(){
+    $("trainerName").textContent = t().name;
+    $("today").textContent = dayKey();
+    $("kPoke").textContent = String(t().pokemon.length);
+    $("kEgg").textContent = String(t().eggs.length);
+    $("kShiny").textContent = String(t().pokemon.filter(p=>p.shiny).length);
+    $("kMoney").textContent = String(state.money||0);
+    $("money").textContent = String(state.money||0);
+  }
+
+  function renderEggButtons(){
+    const last = t().flags.lastWildEggAt || 0;
+    const left = WILD_COOLDOWN - (now()-last);
+    const onCd = left > 0;
+    $("btnWildEgg").disabled = onCd;
+    $("cooldownText").textContent = onCd ? `⏳ Next wild egg in ${fmtLeft(left)}.` : "You can claim a wild mystery egg every 6 hours.";
+
+    const need = Math.max(0, BUY_COST - (state.money||0));
+    $("btnBuyEgg").disabled = (state.money||0) < BUY_COST;
+    $("buyText").textContent = need>0 ? `Need ${need} more ₱ to buy an egg (release Pokémon to earn).` : "";
+
+    // biome search status
+    const s = t().search;
+    if(!s){
+      $("searchText").textContent = "Not searching.";
+      $("btnClaimSearchEgg").disabled = true;
+      $("btnStartSearch").disabled = false;
+    }else{
+      const leftS = s.endsAt - now();
+      if(leftS > 0){
+        $("searchText").textContent = `Searching… ${fmtLeft(leftS)} left.`;
+        $("btnClaimSearchEgg").disabled = true;
+        $("btnStartSearch").disabled = true;
+      }else{
+        $("searchText").textContent = "✅ Egg found! Claim it.";
+        $("btnClaimSearchEgg").disabled = false;
+        $("btnStartSearch").disabled = true;
+      }
+    }
+  }
+
+  function renderBreed(){
+    const today = dayKey();
+    const used = (t().flags.lastBreed === today);
+    $("btnBreed").disabled = used || t().pokemon.length < 2;
+    $("breedText").textContent = used ? "✅ Breeding already used today." : "";
+
+    const opts = t().pokemon.map(m => {
+      return `<option value="${m.id}">${cap(m.name)}${m.shiny?" ✨":""} • ${m.gender} • ${(m.types||[]).join("/")}</option>`;
+    }).join("");
+    $("parentA").innerHTML = `<option value="">Select…</option>` + opts;
+    $("parentB").innerHTML = `<option value="">Select…</option>` + opts;
+
+    // auto-pick a valid pair if possible
+    outer: for(const a of t().pokemon){
+      for(const b of t().pokemon){
+        if(a.id===b.id) continue;
+        if(a.gender===b.gender) continue;
+        const shared = (a.types||[]).filter(x=>(b.types||[]).includes(x));
+        if(shared.length){ $("parentA").value=a.id; $("parentB").value=b.id; break outer; }
+      }
+    }
+  }
+
+  function eggCard(e){
+    const arrived = !e.arrivesAt || now() >= e.arrivesAt;
+    const left = arrived ? (e.readyAt - now()) : (e.arrivesAt - now());
+    const status = arrived ? (now() >= e.readyAt ? "Ready!" : "Incubating") : "Arriving";
+    const src = e.source==="breed" ? `Breed` : (e.source==="purchase" ? "Purchased" : (e.source==="biome" ? "Biome" : "Wild"));
+    const hint = (e.hintTypes && e.hintTypes.length) ? e.hintTypes.join(" / ") : "???";
+    const canHatch = arrived && now() >= e.readyAt;
+
+    return `
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <b>🥚 Mystery Egg</b> <span class="muted">• ${status}</span>
+            <div class="chips">
+              <span class="chip">${src}</span>
+              <span class="chip">${hint}</span>
+              ${e.shiny ? `<span class="chip shiny">✨ Shiny</span>` : ``}
+              <span class="chip">⏳ ${fmtLeft(left)}</span>
+            </div>
+          </div>
+          <button class="small good" data-hatch="${e.id}" ${canHatch?"":"disabled"}>Hatch</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function monCard(m){
+    const sprite = m.sprite ? `<img src="${m.sprite}" alt="">` : "⬛";
+    return `
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div class="row" style="justify-content:flex-start;gap:10px">
+            <div class="sprite">${sprite}</div>
+            <div>
+              <b>${cap(m.name)} ${m.shiny?"✨":""}</b>
+              <div class="chips">
+                ${m.shiny ? `<span class="chip shiny">✨ Shiny</span>` : ``}
+                ${m.favorite ? `<span class="chip fav">⭐ Favorite</span>` : ``}
+                <span class="chip">${m.gender}</span>
+                <span class="chip">${m.outlier ? "📏" : "📐"} H: ${m.height} in</span>
+                <span class="chip">${m.outlier ? "⚠️" : "⚖️"} W: ${m.weight} lb</span>
+                ${(m.types||[]).map(t=>`<span class="chip">${t}</span>`).join("")}
+              </div>
+              <div class="muted">Hatched: ${new Date(m.hatchedAt).toLocaleString()}</div>
+            </div>
+          </div>
+          <div class="row" style="justify-content:flex-end">
+            <button class="small ghost" data-fav="${m.id}">${m.favorite?"Unfavorite":"Favorite"}</button>
+            <button class="small danger" data-release="${m.id}">Release (+₱)</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function dexCard(name, d){
+    const sprite = d.sprite ? `<img src="${d.sprite}" alt="">` : "📘";
+    return `
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <div class="row" style="justify-content:flex-start;gap:10px">
+            <div class="sprite">${sprite}</div>
+            <div>
+              <b>${cap(name)}</b>
+              <div class="chips">
+                <span class="chip">Owned: ${d.ownedCount||0}</span>
+                <span class="chip">${d.shinySeen ? "✨ Shiny seen" : "No shiny yet"}</span>
+                <span class="chip">First: ${new Date(d.firstSeen).toLocaleDateString()}</span>
+              </div>
+            </div>
+          </div>
+          <div class="muted">${d.shinySeen ? "✨" : ""}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderView(){
+    const q = $("search").value || "";
+    const sort = $("sort").value;
+
+    const eggs = sortItems(t().eggs.filter(e=>matchesSearch({name:"egg", types:e.hintTypes||[], shiny:e.shiny, source:e.source}, q)), sort);
+    $("view-eggs").innerHTML = eggs.map(eggCard).join("") || `<div class="muted">No eggs yet. Claim/search/buy one!</div>`;
+
+    const mons = sortItems(t().pokemon.filter(m=>matchesSearch(m, q)), sort);
+    $("view-pokemon").innerHTML = mons.map(monCard).join("") || `<div class="muted">No Pokémon yet. Hatch an egg!</div>`;
+
+    const entries = Object.entries(state.dex || {});
+    entries.sort((a,b)=>(b[1].ownedCount||0)-(a[1].ownedCount||0) || a[0].localeCompare(b[0]));
+    const dq = q.toLowerCase().trim();
+    const filtered = entries.filter(([nm,d])=>{
+      if(!dq) return true;
+      if(nm.includes(dq)) return true;
+      if(d.shinySeen && dq.includes("shiny")) return true;
+      return false;
+    });
+    $("dexList").innerHTML = filtered.map(([n,d])=>dexCard(n,d)).join("") || `<div class="muted">Dex is empty. Hatch something!</div>`;
+  }
+
+  function switchView(view){
+    document.querySelectorAll('[data-view]').forEach(el=>{
+      el.classList.toggle("active", el.getAttribute("data-view")===view);
+    });
+    $("view-eggs").style.display = view==="eggs" ? "" : "none";
+    $("view-pokemon").style.display = view==="pokemon" ? "" : "none";
+    $("view-dex").style.display = view==="dex" ? "" : "none";
+    renderView();
+  }
+
+  function renderAll(){
+    renderTabs();
+    renderKPIs();
+    renderEggButtons();
+    renderBreed();
+    renderView();
+    if($("dlgTrade").open) rebuildTrade();
+  }
+
+  // --- Dynamic button clicks ---
+  document.addEventListener("click", (e)=>{
+    const el = e.target;
+    if(!el) return;
+
+    const view = el.getAttribute("data-view");
+    if(view){ switchView(view); return; }
+
+    const hatchId = el.getAttribute("data-hatch");
+    if(hatchId){ hatchEgg(hatchId); return; }
+
+    const favId = el.getAttribute("data-fav");
+    if(favId){ toggleFavorite(favId); return; }
+
+    const relId = el.getAttribute("data-release");
+    if(relId){ releasePokemon(relId); return; }
   });
-  save(); render();
-}
 
-async function hatch(id){
-  const egg = t().eggs.find(e=>e.id===id);
-  if(!egg || now()<egg.ready) return;
-  const info = await getInfo(egg.species);
-  t().eggs = t().eggs.filter(e=>e.id!==id);
-  t().pokemon.push({
-    id:uid(),
-    name:egg.species,
-    shiny:egg.shiny,
-    height:rollSize(info.height),
-    weight:rollSize(info.weight)
+  // --- Wire static buttons ---
+  $("btnWildEgg").addEventListener("click", claimWildEgg);
+  $("btnBuyEgg").addEventListener("click", buyEgg);
+
+  $("btnStartSearch").addEventListener("click", startBiomeSearch);
+  $("btnClaimSearchEgg").addEventListener("click", claimBiomeEgg);
+
+  $("btnBreed").addEventListener("click", startBreed);
+
+  $("btnTrade").addEventListener("click", openTrade);
+  $("btnDoTrade").addEventListener("click", doTrade);
+  $("btnCloseTrade").addEventListener("click", ()=>$("dlgTrade").close());
+  $("tradeType").addEventListener("change", rebuildTrade);
+
+  $("btnEditNames").addEventListener("click", ()=>{
+    $("dlgNames").showModal();
+    $("n1").value = state.trainers[0].name;
+    $("n2").value = state.trainers[1].name;
+    $("n3").value = state.trainers[2].name;
   });
-  save(); render();
-}
-
-function release(id){
-  t().pokemon = t().pokemon.filter(p=>p.id!==id);
-  state.money++;
-  save(); render();
-}
-
-/* ---------------- RENDER ---------------- */
-
-function render(){
-  document.getElementById("money").textContent = state.money;
-
-  // trainers
-  const tabs = document.getElementById("trainerTabs");
-  tabs.innerHTML="";
-  state.trainers.forEach((tr,i)=>{
-    const b=document.createElement("div");
-    b.className="tab"+(i===state.active?" active":"");
-    b.textContent=tr.name;
-    b.onclick=()=>{state.active=i;save();render()};
-    tabs.appendChild(b);
+  $("btnCloseNames").addEventListener("click", ()=>$("dlgNames").close());
+  $("btnSaveNames").addEventListener("click", ()=>{
+    state.trainers[0].name = $("n1").value.trim() || "Trainer 1";
+    state.trainers[1].name = $("n2").value.trim() || "Trainer 2";
+    state.trainers[2].name = $("n3").value.trim() || "Trainer 3";
+    save();
+    $("dlgNames").close();
+    renderAll();
   });
 
-  // eggs
-  const eggs=document.getElementById("eggList");
-  eggs.innerHTML="";
-  t().eggs.forEach(e=>{
-    const d=document.createElement("div");
-    d.className="card";
-    d.innerHTML=`🥚 ${e.shiny?"✨":""} ${e.species}
-      <div class="muted">Ready in ${Math.max(0,Math.ceil((e.ready-now())/60000))} min</div>
-      <button class="small" onclick="hatch('${e.id}')">Hatch</button>`;
-    eggs.appendChild(d);
+  $("btnExport").addEventListener("click", exportSave);
+  $("fileImport").addEventListener("change", (ev)=>{
+    const f = ev.target.files && ev.target.files[0];
+    if(f) importSave(f);
+    ev.target.value = "";
   });
+  $("btnReset").addEventListener("click", resetAll);
 
-  // pokemon
-  const mons=document.getElementById("pokeList");
-  mons.innerHTML="";
-  t().pokemon.forEach(p=>{
-    const d=document.createElement("div");
-    d.className="card";
-    d.innerHTML=`${p.shiny?"✨":""} ${p.name}
-      <div class="muted">${p.height}" • ${p.weight} lb</div>
-      <button class="danger small" onclick="release('${p.id}')">Release (+₱)</button>`;
-    mons.appendChild(d);
-  });
-}
+  $("search").addEventListener("input", renderView);
+  $("sort").addEventListener("change", renderView);
 
-document.getElementById("btnWildEgg").onclick=()=>claimEgg(false);
-document.getElementById("btnBuyEgg").onclick=()=>{
-  if(state.money>=5){state.money-=5;claimEgg(true);}
-};
+  // Live timers
+  setInterval(()=>{ renderEggButtons(); renderView(); }, 1000);
 
-render();
+  // SW
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  }
+
+  // init
+  populateBiomes();
+  renderAll();
+})();
 </script>
 </body>
 </html>
